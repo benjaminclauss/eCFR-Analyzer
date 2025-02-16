@@ -6,7 +6,7 @@ import streamlit as st
 pg = st.navigation(
     {
         "Home": [
-            (st.Page("home.py", title="Home", default=True, icon=":material/home:")),
+            (st.Page("pages/home.py", title="Home", default=True, icon=":material/home:")),
         ],
         "Overview": [
             (st.Page("overviews/agencies.py", title="Agencies", icon=":material/account_balance:")),
