@@ -2,8 +2,6 @@ import streamlit as st
 import requests
 import pandas as pd
 
-st.set_page_config(page_title="Titles", page_icon="📖", layout="wide")
-
 st.title("Titles")
 st.subheader("Summary information about each title")
 st.text("The Title service can be used to determine the status of each individual title and of the overall status of title imports and reprocessings. It returns an array of all titles containing a hash for each with the name of the title, the latest amended date, latest issue date, up-to-date date, reserved status, and if applicable, processing in progress status. The meta data returned indicates the latest issue date and whether titles are currently being reprocessed.")

@@ -3,8 +3,6 @@ import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
 
-st.set_page_config(page_title="Agency Metrics", page_icon="📊")
-
 st.title("Agency Metrics")
 
 AGENCIES_API_URL = "https://www.ecfr.gov/api/admin/v1/agencies.json"

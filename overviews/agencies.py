@@ -2,8 +2,6 @@ import streamlit as st
 import requests
 import pandas as pd
 
-st.set_page_config(page_title="Agencies", page_icon="🏛", layout="wide")
-
 st.title("Agencies")
 st.text("All top-level agencies in name order with children also in name order")
 

@@ -1,10 +1,22 @@
 import streamlit as st
 
-st.set_page_config(page_title="eCFR Analyzer", layout="wide")
+# TODO: Remove if unused.
+# st.sidebar.header("About")
 
-st.title("Welcome to the eCFR Analyzer")
-st.write(
-    "The goal of this project is to create a simple website to analyze Federal Regulations."
+pg = st.navigation(
+    {
+        "Home": [
+            (st.Page("home.py", title="Home", default=True, icon=":material/home:")),
+        ],
+        "Overview": [
+            (st.Page("overviews/agencies.py", title="Agencies", icon=":material/account_balance:")),
+            (st.Page("overviews/titles.py", title="Titles", icon=":material/book:"))
+        ],
+        "Metrics": [
+            (st.Page("metrics/agency_metrics.py", title="Agency Metrics"))
+        ],
+    }
 )
 
-# TODO: Add basic interaction instructions.
+pg.run()
+
