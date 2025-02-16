@@ -3,8 +3,9 @@ import requests
 import pandas as pd
 
 st.title("Titles")
-st.subheader("Summary information about each title")
-st.text("The Title service can be used to determine the status of each individual title and of the overall status of title imports and reprocessings. It returns an array of all titles containing a hash for each with the name of the title, the latest amended date, latest issue date, up-to-date date, reserved status, and if applicable, processing in progress status. The meta data returned indicates the latest issue date and whether titles are currently being reprocessed.")
+st.text("""The Code of Federal Regulations (CFR) is the codification of the general and permanent rules published in the Federal Register by the departments and agencies of the Federal Government. The Electronic Code of Federal Regulations (eCFR) is a point-in-time system that allows you to browse the Code of Federal Regulations as they existed at any point in time (since January 2017).
+
+It is divided into 50 titles that represent broad areas subject to Federal regulation. Each title is divided into chapters, which usually bear the name of the issuing agency. Each chapter is further subdivided into parts that cover specific regulatory areas. Large parts may be subdivided into subparts. All parts are organized in sections, and most citations to the CFR refer to material at the section level.""")
 
 API_URL = "https://www.ecfr.gov/api/versioner/v1/titles.json"
 
