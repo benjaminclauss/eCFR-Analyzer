@@ -33,7 +33,7 @@ if titles_data:
         "reserved": "Reserved"
     })
 
-    df = df[df["Reserved"] == False].drop(columns=["Reserved"])
+    df = df.drop(columns=["Reserved"])
 
     st.dataframe(df.set_index("Title Number"), use_container_width=True)
 else:

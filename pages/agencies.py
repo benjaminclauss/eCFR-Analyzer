@@ -25,7 +25,6 @@ if agencies_data:
     df = pd.DataFrame(agencies_data).set_index("sortable_name")
 
     df.head()
-    print(df)
 
     st.dataframe(
         df,
