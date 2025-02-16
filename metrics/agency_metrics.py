@@ -2,8 +2,10 @@ import streamlit as st
 import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
+# TODO: Presumably, we can consolidate usage of XML libraries.
+from bs4 import BeautifulSoup
 
-st.title("Agency Metrics")
+st.set_page_config(layout="wide")
 
 AGENCIES_API_URL = "https://www.ecfr.gov/api/admin/v1/agencies.json"
 
@@ -19,7 +21,7 @@ def fetch_agencies():
 TITLE_API_URL = "https://www.ecfr.gov/api/versioner/v1/titles.json"
 
 @st.cache_data
-def fetch_title_metadata():
+def fetch_titles():
     """Fetches metadata for all titles, including the latest issue date."""
     response = requests.get(TITLE_API_URL)
     if response.status_code == 200:
@@ -60,7 +62,6 @@ def fetch_ancestry(date, title, subtitle=None, chapter=None, subchapter=None, pa
 
     response = requests.get(url, params=params)
     if response.status_code == 200:
-        print(response.json())
         return response.json()
     return None
 
@@ -80,8 +81,6 @@ def extract_section_from_xml(xml_content, ancestry_data):
     root = ET.fromstring(xml_content)
 
     # Extract identifiers from ancestry data
-    for item in ancestry_data:
-        print(item)
     hierarchy = {item["type"]: item["identifier"] for item in ancestry_data}
 
     # Start at the Title Level
@@ -124,10 +123,9 @@ def extract_section_from_xml(xml_content, ancestry_data):
     # Check Section (Final Level)
     if "section" in hierarchy:
         section_elem = part_elem.find(f".//DIV8[@TYPE='SECTION'][@N='{hierarchy['section']}']")
-        return ET.tostring(section_elem, encoding="unicode",
-                           method="text") if section_elem else f"Section {hierarchy['section']} not found."
+        return section_elem if section_elem else f"Section {hierarchy['section']} not found."
 
-    return ET.tostring(part_elem, encoding="unicode", method="text")
+    return part_elem
 
 
 def get_cfr_section(date, title, subtitle=None, chapter=None, subchapter=None, part=None, section=None):
@@ -144,12 +142,13 @@ def get_cfr_section(date, title, subtitle=None, chapter=None, subchapter=None, p
     return extract_section_from_xml(cfr_text, ancestry_data['ancestors'])
 
 
-agencies_data = fetch_agencies()
-title_metadata = fetch_title_metadata()
+st.title("Agency Metrics")
 
+agencies_data = fetch_agencies()
+title_metadata = fetch_titles()
 
 if agencies_data:
-    df = pd.DataFrame(agencies_data).rename(columns={"name": "Agency Name"})
+    df = pd.DataFrame(agencies_data).rename(columns={"name": "Agency Name"}).sort_values(by="sortable_name")
 
     selected_agency = st.selectbox("Agency", df["Agency Name"])
 
@@ -203,7 +202,15 @@ if agencies_data:
                 if reference_content:
                     st.subheader(format_cfr_reference(selected_reference))
 
-                    st.text_area("CFR Content", reference_content, height=400)
+                    # Pass it to BeautifulSoup for parsing
+                    soup = BeautifulSoup(ET.tostring(reference_content, encoding="unicode", method="xml"), "xml")
+                    # Extract all <P> elements and get the text content as a list
+                    p_texts = [p.get_text(strip=True) for p in soup.find_all("P")]
+
+                    st.text("This CFR section has the following word count excluding section headers (e.g., Chapter, Part):")
+                    st.text(sum(len(text.split()) for text in p_texts))
+
+                    st.text_area("CFR Content", ET.tostring(reference_content, encoding="unicode", method="text"), height=400)
                 else:
                     st.warning(f"Failed to fetch CFR text for Title {title_number} on {latest_issue_date}.")
     else:
