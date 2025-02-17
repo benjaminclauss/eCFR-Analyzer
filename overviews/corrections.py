@@ -18,8 +18,38 @@ def fetch_titles():
     return ecfr.fetch_titles()
 
 
-titles_data = fetch_titles()
+def graph_corrections_over_time(corrections):
+    corrections["Error Corrected"] = pd.to_datetime(corrections["Error Corrected"], errors="coerce")
 
+    corrections_by_date = (
+        corrections.dropna(subset=["Error Corrected"])
+        .groupby(corrections["Error Corrected"].dt.to_period("M"))
+        .size()
+        .rename("Correction Count")
+        .reset_index()
+    )
+
+    corrections_by_date["Error Corrected"] = corrections_by_date["Error Corrected"].astype(str)
+
+    full_date_range = pd.date_range(
+        start=corrections["Error Corrected"].min(),
+        end=corrections["Error Corrected"].max(),
+        freq="ME"
+    )
+
+    full_range_df = pd.DataFrame(full_date_range, columns=["Error Corrected"])
+    full_range_df["Error Corrected"] = full_range_df["Error Corrected"].dt.strftime("%Y-%m")
+    full_range_df["Correction Count"] = 0
+
+    corrections_by_date = full_range_df.merge(corrections_by_date, on="Error Corrected", how="left").fillna(0)
+
+    corrections_by_date["Correction Count"] = corrections_by_date["Correction Count_y"].astype(int)
+    corrections_by_date = corrections_by_date[["Error Corrected", "Correction Count"]]
+
+    st.line_chart(corrections_by_date.set_index("Error Corrected"))
+
+
+titles_data = fetch_titles()
 col1, col2 = st.columns(2)
 with col1:
     selected_date = st.date_input(
@@ -27,6 +57,7 @@ with col1:
         None,
         help="Restrict results to eCFR corrections that occurred on or before the specified date and that were corrected on or after the specified date.",
     )
+
 with col2:
     if titles_data:
         titles_dict = {t["number"]: t for t in titles_data}
@@ -78,13 +109,8 @@ if corrections_data and len(corrections_data["ecfr_corrections"]) > 0:
     st.metric("Total Corrections", len(corrections))
     st.dataframe(corrections.set_index("ID"), use_container_width=True)
 
-    st.subheader("Corrections Over Time")
-    corrections["Error Corrected"] = pd.to_datetime(corrections["Error Corrected"], errors="coerce")
-    corrections_by_date = corrections.dropna(subset=["Error Corrected"]).groupby(
-        corrections["Error Corrected"].dt.to_period("M")
-    ).size().rename("Correction Count")
-    corrections_by_date.index = corrections_by_date.index.astype(str)
-    st.line_chart(corrections_by_date)
+    st.subheader("Corrections over Time")
+    graph_corrections_over_time(corrections)
 
 elif len(corrections_data["ecfr_corrections"]) == 0:
     st.metric("Total Corrections", 0)
