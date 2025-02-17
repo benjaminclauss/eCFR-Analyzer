@@ -40,4 +40,5 @@ Generate and save metrics for all agencies:
 
 ## Wishlist
 
-- [ ] Allow different periodicity for Corrections graph
+- [ ] Add proper Python linting (e.g., quote consistency).
+- [ ] Allow different periodicity for Corrections graph.

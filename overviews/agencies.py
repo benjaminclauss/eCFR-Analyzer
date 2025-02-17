@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import redis
 import streamlit as st
@@ -29,8 +30,8 @@ def fetch_agencies():
 
 def fetch_word_counts(agencies):
     slugs = agencies["slug"].tolist()
-    word_counts = r.mget(slugs)
-    return [int(wc) if wc else None for wc in word_counts]
+    agency_metrics = [json.loads(s) if s is not None else None for s in r.mget(slugs)]
+    return [agency.get("total_word_count") if agency is not None else None for agency in agency_metrics]
 
 
 with st.spinner("Fetching Agencies..."):

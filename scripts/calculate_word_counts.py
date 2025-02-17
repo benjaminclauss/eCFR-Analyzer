@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -29,39 +30,42 @@ def calculate_word_counts():
     if not agencies_data:
         logging.error("No Agency data found.")
         return
+    agencies = agencies_data["agencies"]
+
+    logging.info("Resetting Agency metrics...")
+    for agency in agencies:
+        r.delete(agency["slug"])
 
     logging.info("Starting word count calculation...")
-    logging.info(f"Total agencies to process: {len(agencies_data)}")
+    logging.info(f"Total agencies to process: {len(agencies)}")
 
     with ThreadPoolExecutor(max_workers=MAX_CONCURRENT_CALCULATIONS) as executor:
-        results = list(executor.map(process_agency, agencies_data))  # Ensure results are fully consumed
+        results = list(executor.map(process_agency, agencies))  # Ensure results are fully consumed
 
     logging.info("Word count calculation completed.")
     return dict(results)
 
 
 semaphore = threading.Semaphore(MAX_CONCURRENT_CALCULATIONS)
+titles_data = ecfr.fetch_titles()
 
 
 def process_agency(agency):
     with semaphore:  # Ensures only `MAX_CONCURRENT_CALCULATIONS` run at a time
         logging.info(f"🚀 Starting processing: {agency['name']}")
-        agency_word_count = get_word_count_for_cfr_references(agency["cfr_references"])
+        total_word_count = 0
+        references = []
+        for reference in agency["cfr_references"]:
+            latest_issue_date = {t["number"]: t["latest_issue_date"] for t in titles_data}[reference["title"]]
+            reference_word_count = calculate_word_count_for_reference(latest_issue_date, reference)
+            total_word_count += reference_word_count
+            references.append({"reference": reference, "word_count": reference_word_count})
+        agency_word_count = total_word_count
         logging.info(
             f"✅ Completed: {agency['name']} - Word count: {agency_word_count}")
-        r.set(agency["slug"], agency_word_count)
+        result = {"total_word_count": agency_word_count, "references": references}
+        r.set(agency["slug"], json.dumps(result))
         return agency["slug"], agency_word_count
-
-
-titles_data = ecfr.fetch_titles()
-
-
-def get_word_count_for_cfr_references(references):
-    total = 0
-    for reference in references:
-        latest_issue_date = {t["number"]: t["latest_issue_date"] for t in titles_data}[reference["title"]]
-        total += calculate_word_count_for_reference(latest_issue_date, reference)
-    return total
 
 
 def calculate_word_count_for_reference(date, reference):
