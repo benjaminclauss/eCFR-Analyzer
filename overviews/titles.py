@@ -34,13 +34,18 @@ if titles_data:
 
     st.dataframe(df.set_index("Number"), use_container_width=True)
 
-    st.subheader("Title Content Versions")
+    st.subheader("Title Content")
 
     titles_dict = {t["number"]: t for t in titles_data}
     selected_title = st.selectbox(
         "Select a CFR Title:",
         list(titles_dict.keys()),
         format_func=lambda t: f"{t}: {titles_dict[t]["name"]}",
+    )
+    st.link_button(
+        "View in CFR",
+        f"https://www.ecfr.gov/current/title-{selected_title}",
+        icon="📕",
     )
 
     with st.spinner("Fetching Title Content Versions..."):
@@ -55,7 +60,6 @@ if titles_data:
         st.metric(label="Latest Amendment Date", value=meta["latest_amendment_date"])
     with col3:
         st.metric(label="Latest Issue Date", value=meta["latest_issue_date"])
-
 
     content_versions = pd.DataFrame(versions_data["content_versions"]).drop(columns=["date", "title"])
 
