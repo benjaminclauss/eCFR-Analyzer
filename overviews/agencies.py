@@ -37,7 +37,7 @@ with st.spinner("Fetching Agencies..."):
     agencies_data = fetch_agencies()
 
 if agencies_data:
-    agencies = pd.DataFrame(agencies_data).set_index("sortable_name")
+    agencies = pd.DataFrame(agencies_data["agencies"]).set_index("sortable_name")
     st.metric("Total Agencies", len(agencies))
 
     with st.spinner("Fetching word counts..."):

@@ -3,18 +3,28 @@ import requests
 
 
 def fetch_agencies():
-    response = requests.get("https://www.ecfr.gov/api/admin/v1/agencies.json")
-    if response.status_code == 200:
-        return response.json().get("agencies", [])
-    return None
+    try:
+        response = requests.get("https://www.ecfr.gov/api/admin/v1/agencies.json")
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as error:
+        logging.error(f"Failed to fetch Agencies: {error}")
+        return None
 
 
-ANCESTRY_API_URL = "https://www.ecfr.gov/api/versioner/v1/ancestry/{date}/title-{title}.json"
+def fetch_corrections():
+    try:
+        response = requests.get("https://www.ecfr.gov/api/admin/v1/corrections.json")
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as error:
+        logging.error(f"Failed to fetch Corrections: {error}")
+        return None
 
 
 def fetch_ancestry_for_title(date, title, subtitle=None, chapter=None, subchapter=None, part=None, section=None):
     """Fetches the full ancestry for a given CFR reference."""
-    url = ANCESTRY_API_URL.format(date=date, title=title)
+    url = f"https://www.ecfr.gov/api/versioner/v1/ancestry/{date}/title-{title}.json"
     params = {}
 
     if subtitle: params["subtitle"] = subtitle
