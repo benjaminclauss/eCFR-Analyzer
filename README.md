@@ -37,3 +37,7 @@ Generate and save metrics for all agencies:
 ```shell
  python -m scripts.calculate_word_counts
 ```
+
+## Wishlist
+
+- [ ] Allow different periodicity for Corrections graph
