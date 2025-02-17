@@ -33,7 +33,7 @@ def fetch_word_counts(agencies):
     return [int(wc) if wc else None for wc in word_counts]
 
 
-with st.spinner("Fetching agencies..."):
+with st.spinner("Fetching Agencies..."):
     agencies_data = fetch_agencies()
 
 if agencies_data:

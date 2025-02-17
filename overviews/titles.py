@@ -5,9 +5,15 @@ from utils import ecfr
 
 st.set_page_config(layout="wide")
 
-titles_data = ecfr.fetch_titles()
+@st.cache_data
+def fetch_titles():
+    return ecfr.fetch_titles()
 
 st.title("Titles")
+
+
+with st.spinner("Fetching Titles..."):
+    titles_data = fetch_titles()
 
 if titles_data:
     df = pd.DataFrame(titles_data).rename(columns={
