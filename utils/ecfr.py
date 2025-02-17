@@ -67,18 +67,19 @@ def fetch_titles():
 
 
 def fetch_versions_for_title(title, gte=None, lte=None, on=None):
-    base_url = f"https://www.ecfr.gov/api/versioner/v1/versions/title-{title}.json"
-
     params = {}
-    if on:
-        params["on"] = on
-    elif gte:
-        params["gte"] = gte
-    elif lte:
-        params["lte"] = lte
-
-    response = requests.get(base_url, params=params)
-    if response.status_code == 200:
-        return response.json()
+    if on is not None:
+        params["issue_date[on]"] = on
     else:
+        if gte is not None:
+            params["issue_date[gte]"] = gte
+        if lte is not None:
+            params["issue_date[lte]"] = lte
+
+    try:
+        response = requests.get(f"https://www.ecfr.gov/api/versioner/v1/versions/title-{title}.json", params=params)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as error:
+        logging.error(f"Failed to fetch Content Versions for title {title}: {error}")
         return None
