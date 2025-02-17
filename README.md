@@ -12,6 +12,11 @@ Feel free to add your own custom metrics.
 There should be a front end visualization for the content where we can click around and ideally query items. 
 Additionally, there should be a public GitHub project with the code.
 
+## Architecture
+
+- **Web Application**: [Streamlit](https://github.com/streamlit/streamlit) on [Streamlit Community Cloud](https://streamlit.io/cloud)
+- **Metrics Backend**: [Redis](https://redis.io/) on [Upstash](https://upstash.com/)
+
 ## Run
 
 Generate word counts for all agencies.
