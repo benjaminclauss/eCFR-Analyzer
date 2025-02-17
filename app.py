@@ -1,8 +1,5 @@
 import streamlit as st
 
-# TODO: Remove if unused.
-# st.sidebar.header("About")
-
 pg = st.navigation(
     {
         "Home": [
@@ -16,4 +13,3 @@ pg = st.navigation(
 )
 
 pg.run()
-

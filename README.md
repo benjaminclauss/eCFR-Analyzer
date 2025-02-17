@@ -12,3 +12,10 @@ Feel free to add your own custom metrics.
 There should be a front end visualization for the content where we can click around and ideally query items. 
 Additionally, there should be a public GitHub project with the code.
 
+## Run
+
+Generate word counts for all agencies.
+
+```shell
+ python -m scripts.calculate_word_counts
+```

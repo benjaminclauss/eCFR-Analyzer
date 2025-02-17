@@ -1,8 +1,7 @@
+import logging
 import requests
-import streamlit as st
 
 
-@st.cache_data
 def fetch_agencies():
     response = requests.get("https://www.ecfr.gov/api/admin/v1/agencies.json")
     if response.status_code == 200:
@@ -13,7 +12,6 @@ def fetch_agencies():
 ANCESTRY_API_URL = "https://www.ecfr.gov/api/versioner/v1/ancestry/{date}/title-{title}.json"
 
 
-@st.cache_data
 def fetch_ancestry_for_title(date, title, subtitle=None, chapter=None, subchapter=None, part=None, section=None):
     """Fetches the full ancestry for a given CFR reference."""
     url = ANCESTRY_API_URL.format(date=date, title=title)
@@ -31,8 +29,14 @@ def fetch_ancestry_for_title(date, title, subtitle=None, chapter=None, subchapte
     return None
 
 
-@st.cache_data
 def fetch_xml_for_title(date, title, subtitle=None, chapter=None, subchapter=None, part=None):
+    """
+    Source XML for a title or subset of a title.
+
+    Requests can be for entire titles or part level and below.
+    - Downloadable XML document is returned for title requests.
+    - Processed XML is returned if part, subpart, section, or appendix is requested.
+    """
     url = f"https://www.ecfr.gov/api/versioner/v1/full/{date}/title-{title}.xml"
 
     params = {}
@@ -45,14 +49,15 @@ def fetch_xml_for_title(date, title, subtitle=None, chapter=None, subchapter=Non
     if part:
         params["part"] = part
 
-    response = requests.get(url, params=params)
-
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
         return response.text
-    return None
+    except requests.exceptions.RequestException as error:
+        logging.error(f"Failed to fetch XML for title {title} on {date}: {error}")
+        return None
 
 
-@st.cache_data
 def fetch_titles():
     response = requests.get("https://www.ecfr.gov/api/versioner/v1/titles.json")
     if response.status_code == 200:
@@ -61,7 +66,6 @@ def fetch_titles():
         return None
 
 
-@st.cache_data
 def fetch_versions_for_title(title, gte=None, lte=None, on=None):
     base_url = f"https://www.ecfr.gov/api/versioner/v1/versions/title-{title}.json"
 
