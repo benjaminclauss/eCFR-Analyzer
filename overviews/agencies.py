@@ -6,13 +6,9 @@ st.set_page_config(layout="wide")
 
 st.title("Agencies")
 
-API_URL = "https://www.ecfr.gov/api/admin/v1/agencies.json"
-
-# TODO: Download this data.
-
 @st.cache_data
 def fetch_agencies():
-    response = requests.get(API_URL)
+    response = requests.get("https://www.ecfr.gov/api/admin/v1/agencies.json")
     if response.status_code == 200:
         return response.json().get("agencies", [])
     else:
@@ -21,14 +17,11 @@ def fetch_agencies():
 agencies_data = fetch_agencies()
 
 if agencies_data:
-    df = pd.DataFrame(agencies_data).set_index("sortable_name")
+    agencies = pd.DataFrame(agencies_data).set_index("sortable_name")
+    st.metric("Total Agencies", len(agencies))
 
-    df.head()
-
-    st.dataframe(
-        df,
-        use_container_width=True
-    )
-
+    overview = agencies.drop(columns=["display_name", "slug", "cfr_references", "children"])
+    overview = overview.rename(columns={"name": "Name", "short_name": "Short Name"})
+    st.dataframe(overview, hide_index=True, use_container_width=True)
 else:
     st.error("Failed to fetch agencies. Try again later.")

@@ -7,25 +7,22 @@ from bs4 import BeautifulSoup
 
 st.set_page_config(layout="wide")
 
-AGENCIES_API_URL = "https://www.ecfr.gov/api/admin/v1/agencies.json"
 
 @st.cache_data
 def fetch_agencies():
     """Fetches the list of agencies and their CFR references."""
-    response = requests.get(AGENCIES_API_URL)
+    response = requests.get("https://www.ecfr.gov/api/admin/v1/agencies.json")
     if response.status_code == 200:
         return response.json().get("agencies", [])
     return None
 
 
-TITLE_API_URL = "https://www.ecfr.gov/api/versioner/v1/titles.json"
-
 @st.cache_data
 def fetch_titles():
     """Fetches metadata for all titles, including the latest issue date."""
-    response = requests.get(TITLE_API_URL)
+    response = requests.get("https://www.ecfr.gov/api/versioner/v1/titles.json")
     if response.status_code == 200:
-        return {str(t["number"]): t["latest_issue_date"] for t in response.json().get("titles", [])}
+        return {t["number"]: t["latest_issue_date"] for t in response.json().get("titles", [])}
     return {}
 
 
@@ -48,6 +45,7 @@ def format_cfr_reference(ref):
 ANCESTRY_API_URL = "https://www.ecfr.gov/api/versioner/v1/ancestry/{date}/title-{title}.json"
 CFR_TEXT_API_URL = "https://www.ecfr.gov/api/versioner/v1/full/{date}/title-{title}.xml"
 
+
 @st.cache_data
 def fetch_ancestry(date, title, subtitle=None, chapter=None, subchapter=None, part=None, section=None):
     """Fetches the full ancestry for a given CFR reference."""
@@ -64,6 +62,7 @@ def fetch_ancestry(date, title, subtitle=None, chapter=None, subchapter=None, pa
     if response.status_code == 200:
         return response.json()
     return None
+
 
 @st.cache_data
 def fetch_cfr_text(date, title):
@@ -133,7 +132,7 @@ def get_cfr_section(date, title, subtitle=None, chapter=None, subchapter=None, p
 
     ancestry_data = fetch_ancestry(date, title, subtitle, chapter, subchapter, part, section)
     if not ancestry_data:
-        return "Failed to fetch ancestry data."
+        raise Exception(f"Could not fetch CFR section for {title} on {date}.")
 
     cfr_text = fetch_cfr_text(date, title)
     if not cfr_text:
@@ -143,17 +142,48 @@ def get_cfr_section(date, title, subtitle=None, chapter=None, subchapter=None, p
 
 
 st.title("Agency Metrics")
-
 agencies_data = fetch_agencies()
 title_metadata = fetch_titles()
 
+agencies = pd.DataFrame(agencies_data).head(10)
+
+
+def determine_word_count_for_references(cfr_references):
+    total_word_count = 0
+    print(cfr_references)
+    for reference in cfr_references:
+        title_number = reference["title"]
+        subtitle = reference.get("subtitle", None)
+        chapter = reference.get("chapter", None)
+        subchapter = reference.get("subchapter", None)
+        part = reference.get("part", None)
+
+        latest_issue_date = title_metadata.get(title_number, None)
+        reference_content = get_cfr_section(latest_issue_date, title_number, subtitle=subtitle, chapter=chapter,
+                                            subchapter=subchapter, part=part, section=None)
+
+        soup = BeautifulSoup(ET.tostring(reference_content, encoding="unicode", method="xml"), "xml")
+        p_texts = [p.get_text(strip=True) for p in soup.find_all("P")]
+
+        total_word_count += sum(len(text.split()) for text in p_texts)
+        print(total_word_count)
+
+    return total_word_count
+
+
+agencies["word_count"] = agencies["cfr_references"].apply(determine_word_count_for_references)
+
+st.dataframe(agencies)
+
+st.bar_chart(agencies.set_index("display_name")["word_count"])
+
 if agencies_data:
-    df = pd.DataFrame(agencies_data).rename(columns={"name": "Agency Name"}).sort_values(by="sortable_name")
+    agency_names = agencies.rename(columns={"name": "Agency Name"}).sort_values(by="sortable_name")
+    selected_agency_name = st.selectbox("Agency", agency_names["Agency Name"])
+    selected_agency = agency_names[agency_names["Agency Name"] == selected_agency_name].iloc[0]
 
-    selected_agency = st.selectbox("Agency", df["Agency Name"])
-
-    agency_info = df[df["Agency Name"] == selected_agency].iloc[0]
-    cfr_references = agency_info.get("cfr_references", [])
+    st.text(f"Selected Agency: {selected_agency_name}")
+    cfr_references = selected_agency.get("cfr_references", [])
 
     st.subheader(f"CFR References")
 
@@ -207,10 +237,12 @@ if agencies_data:
                     # Extract all <P> elements and get the text content as a list
                     p_texts = [p.get_text(strip=True) for p in soup.find_all("P")]
 
-                    st.text("This CFR section has the following word count excluding section headers (e.g., Chapter, Part):")
+                    st.text(
+                        "This CFR section has the following word count excluding section headers (e.g., Chapter, Part):")
                     st.text(sum(len(text.split()) for text in p_texts))
 
-                    st.text_area("CFR Content", ET.tostring(reference_content, encoding="unicode", method="text"), height=400)
+                    st.text_area("CFR Content", ET.tostring(reference_content, encoding="unicode", method="text"),
+                                 height=400)
                 else:
                     st.warning(f"Failed to fetch CFR text for Title {title_number} on {latest_issue_date}.")
     else:
