@@ -1,7 +1,5 @@
 import streamlit as st
 
-# TODO: Add basic interaction instructions.
-
 st.title("Welcome to the eCFR Analyzer")
 st.write("The goal of this project is to create a simple website to analyze Federal Regulations.")
 
@@ -16,3 +14,6 @@ Per the [eCFR](https://www.ecfr.gov/):
 > [Learn more](https://www.ecfr.gov/reader-aids/understanding-the-ecfr/what-is-the-ecfr) about the eCFR, its status, 
 > and the editorial process.
 """)
+
+if st.button("Click me for balloons! 🎈"):
+    st.balloons()
