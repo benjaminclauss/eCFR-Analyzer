@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from datetime import datetime
 from utils import ecfr
 
 st.set_page_config(layout="wide")
@@ -19,6 +20,9 @@ def fetch_titles():
 
 
 def graph_corrections_over_time(corrections):
+    if len(corrections) == 0:
+        return
+
     corrections["Error Corrected"] = pd.to_datetime(corrections["Error Corrected"], errors="coerce")
 
     corrections_by_date = (
@@ -33,7 +37,7 @@ def graph_corrections_over_time(corrections):
 
     full_date_range = pd.date_range(
         start=corrections["Error Corrected"].min(),
-        end=corrections["Error Corrected"].max(),
+        end=datetime.today().strftime("%Y-%m-%d"),
         freq="ME"
     )
 
