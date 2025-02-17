@@ -9,18 +9,44 @@ st.title("Corrections")
 
 
 @st.cache_data
-def fetch_corrections(date=None):
-    return ecfr.fetch_corrections(date=date)
+def fetch_corrections(date=None, title=None):
+    return ecfr.fetch_corrections(date=date, title=title)
 
 
-date = st.date_input(
-    "Date",
-    None,
-    help="Restrict results to eCFR corrections that occurred on or before the specified date and that were corrected on or after the specified date.",
-)
+@st.cache_data
+def fetch_titles():
+    return ecfr.fetch_titles()
+
+
+titles_data = fetch_titles()
+
+col1, col2 = st.columns(2)
+with col1:
+    selected_date = st.date_input(
+        "Date",
+        None,
+        help="Restrict results to eCFR corrections that occurred on or before the specified date and that were corrected on or after the specified date.",
+    )
+with col2:
+    if titles_data:
+        titles_dict = {t["number"]: t for t in titles_data}
+        selected_title = st.selectbox(
+            "Title",
+            list(titles_dict.keys()),
+            index=None,
+            format_func=lambda t: f"{t}: {titles_dict[t]["name"]}",
+            help="Restricts results to the given Title",
+            placeholder="Select a Title",
+        )
+    else:
+        st.error("Failed to fetch Titles", icon="🚨")
+
 
 with st.spinner("Fetching Corrections..."):
-    corrections_data = fetch_corrections(date=str(date) if date is not None else None)
+    corrections_data = fetch_corrections(
+        date=str(selected_date) if selected_date is not None else None,
+        title=selected_title,
+    )
 
 if corrections_data and len(corrections_data["ecfr_corrections"]) > 0:
     corrections = pd.DataFrame(corrections_data["ecfr_corrections"])
@@ -47,12 +73,13 @@ if corrections_data and len(corrections_data["ecfr_corrections"]) > 0:
         "Error Corrected",
         "Year",
         "FR Citation",
+        "Title",
         "Position",
         "Display in TOC",
-        "Title",
         "Last Modified",
     ]
     corrections = corrections[[col for col in order if col in corrections.columns]]
+    corrections = corrections.drop(columns=["CFR References"])
 
     for col in ["Error Corrected", "Error Occurred", "Last Modified"]:
         corrections[col] = pd.to_datetime(corrections[col], errors="coerce").dt.strftime("%Y-%m-%d")

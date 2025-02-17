@@ -41,6 +41,7 @@ if titles_data:
         "Select a CFR Title:",
         list(titles_dict.keys()),
         format_func=lambda t: f"{t}: {titles_dict[t]["name"]}",
+        placeholder="Select a Title",
     )
     st.link_button(
         "View in CFR",
