@@ -23,11 +23,11 @@ if titles_data:
 
     st.dataframe(df.set_index("Title Number"), use_container_width=True)
 
-    st.subheader("Title Versions")
+    st.subheader("Title Content Versions")
 
     titles_dict = {t['number']: t for t in titles_data}
     selected_title = st.selectbox(
-        "Choose a CFR Title:",
+        "Select a CFR Title:",
         list(titles_dict.keys()),
         format_func=lambda t: str(t) + ": " + titles_dict[t]['name'],
     )
@@ -35,13 +35,13 @@ if titles_data:
     versions_data = ecfr.fetch_versions_for_title(selected_title)
 
     meta = versions_data["meta"]
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(label="Latest Amendment Date", value=meta['latest_amendment_date'])
+        st.metric(label="Total Content Versions", value=meta["result_count"])
     with col2:
-        st.metric(label="Latest Issue Date", value=meta['latest_issue_date'])
+        st.metric(label="Latest Amendment Date", value=meta['latest_amendment_date'])
     with col3:
-        st.header("An owl")
+        st.metric(label="Latest Issue Date", value=meta['latest_issue_date'])
 
 
     st.text("The selected Title has the following Sections and Appendices.")
