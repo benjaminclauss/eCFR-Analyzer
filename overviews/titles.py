@@ -6,13 +6,13 @@ from utils import ecfr
 
 st.set_page_config(layout="wide")
 
+st.title("Code of Federal Regulations Titles 📖")
+
 
 @st.cache_data
 def fetch_titles():
     return ecfr.fetch_titles()
 
-
-st.title("Code of Federal Regulations Titles")
 
 with st.spinner("Fetching Titles..."):
     titles_data = fetch_titles()

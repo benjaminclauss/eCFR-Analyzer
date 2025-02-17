@@ -7,7 +7,7 @@ from utils import ecfr
 
 st.set_page_config(layout="wide")
 
-st.title("Federal Agencies")
+st.title("Federal Agencies 🏛️")
 
 
 @st.cache_resource

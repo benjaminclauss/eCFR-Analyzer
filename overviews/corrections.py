@@ -6,7 +6,7 @@ from utils import ecfr
 
 st.set_page_config(layout="wide")
 
-st.title("Corrections")
+st.title("Corrections 📝")
 
 
 @st.cache_data
