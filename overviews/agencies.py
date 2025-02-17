@@ -38,10 +38,15 @@ with st.spinner("Fetching Agencies..."):
 
 if agencies_data:
     agencies = pd.DataFrame(agencies_data["agencies"]).set_index("sortable_name")
-    st.metric("Total Agencies", len(agencies))
 
     with st.spinner("Fetching word counts..."):
         agencies["Word Count"] = fetch_word_counts(agencies)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Total Agencies", len(agencies))
+    with col2:
+        st.metric("Average Word Count", round(agencies["Word Count"].mean(), 2))
 
     calculating_count = agencies["Word Count"].isnull().sum()
     if calculating_count > 0:
