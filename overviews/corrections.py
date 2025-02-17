@@ -82,7 +82,7 @@ if corrections_data and len(corrections_data["ecfr_corrections"]) > 0:
     corrections["Error Corrected"] = pd.to_datetime(corrections["Error Corrected"], errors="coerce")
     corrections_by_date = corrections.dropna(subset=["Error Corrected"]).groupby(
         corrections["Error Corrected"].dt.to_period("M")
-    ).size()
+    ).size().rename("Correction Count")
     corrections_by_date.index = corrections_by_date.index.astype(str)
     st.line_chart(corrections_by_date)
 
