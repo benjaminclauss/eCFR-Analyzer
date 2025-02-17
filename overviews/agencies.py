@@ -16,4 +16,4 @@ if agencies_data:
     overview = overview.rename(columns={"name": "Name", "short_name": "Short Name"})
     st.dataframe(overview, hide_index=True, use_container_width=True)
 else:
-    st.error("Failed to fetch agencies. Try again later.")
+    st.error("Failed to fetch Agencies. Try again later.")

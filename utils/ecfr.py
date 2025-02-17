@@ -10,6 +10,40 @@ def fetch_agencies():
     return None
 
 
+ANCESTRY_API_URL = "https://www.ecfr.gov/api/versioner/v1/ancestry/{date}/title-{title}.json"
+
+
+@st.cache_data
+def fetch_ancestry_for_title(date, title, subtitle=None, chapter=None, subchapter=None, part=None, section=None):
+    """Fetches the full ancestry for a given CFR reference."""
+    url = ANCESTRY_API_URL.format(date=date, title=title)
+    params = {}
+
+    if subtitle: params["subtitle"] = subtitle
+    if chapter: params["chapter"] = chapter
+    if subchapter: params["subchapter"] = subchapter
+    if part: params["part"] = part
+    if section: params["section"] = section
+
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json()
+    return None
+
+
+CFR_TEXT_API_URL = "https://www.ecfr.gov/api/versioner/v1/full/{date}/title-{title}.xml"
+
+
+@st.cache_data
+def fetch_full_title_xml(date, title):
+    """Fetches the full CFR XML text for a given title and date."""
+    url = CFR_TEXT_API_URL.format(date=date, title=title)
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+    return None
+
+
 @st.cache_data
 def fetch_titles():
     response = requests.get("https://www.ecfr.gov/api/versioner/v1/titles.json")
@@ -20,7 +54,7 @@ def fetch_titles():
 
 
 @st.cache_data
-def get_versions(title, gte=None, lte=None, on=None):
+def fetch_versions_for_title(title, gte=None, lte=None, on=None):
     base_url = f"https://www.ecfr.gov/api/versioner/v1/versions/title-{title}.json"
 
     params = {}
