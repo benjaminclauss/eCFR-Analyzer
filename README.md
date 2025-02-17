@@ -16,7 +16,7 @@
 
 - **Web Application**: [Streamlit](https://github.com/streamlit/streamlit)
   on [Streamlit Community Cloud](https://streamlit.io/cloud)
-  - **Analytics**: Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
+  - **Analytics**: [Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
 - **Metrics Backend**: [Redis](https://redis.io/) on [Upstash](https://upstash.com/)
 
 ## Setup
