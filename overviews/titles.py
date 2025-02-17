@@ -18,7 +18,7 @@ with st.spinner("Fetching Titles..."):
     titles_data = fetch_titles()
 
 if titles_data:
-    df = pd.DataFrame(titles_data).rename(columns={
+    titles = pd.DataFrame(titles_data).rename(columns={
         "number": "Number",
         "name": "Name",
         "latest_amended_on": "Last Amended",
@@ -27,12 +27,12 @@ if titles_data:
         "reserved": "Reserved"
     })
 
-    df = df.drop(columns=["Reserved"])
+    titles = titles.drop(columns=["Reserved"])
 
     for col in ["Last Amended", "Last Issued", "Up to Date As Of"]:
-        df[col] = pd.to_datetime(df[col], errors="coerce").dt.strftime("%Y-%m-%d")
+        titles[col] = pd.to_datetime(titles[col], errors="coerce").dt.strftime("%Y-%m-%d")
 
-    st.dataframe(df.set_index("Number"), use_container_width=True)
+    st.dataframe(titles.set_index("Number"), use_container_width=True)
 
     st.subheader("Title Content")
 
