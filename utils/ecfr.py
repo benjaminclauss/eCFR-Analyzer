@@ -31,14 +31,22 @@ def fetch_ancestry_for_title(date, title, subtitle=None, chapter=None, subchapte
     return None
 
 
-CFR_TEXT_API_URL = "https://www.ecfr.gov/api/versioner/v1/full/{date}/title-{title}.xml"
-
-
 @st.cache_data
-def fetch_full_title_xml(date, title):
-    """Fetches the full CFR XML text for a given title and date."""
-    url = CFR_TEXT_API_URL.format(date=date, title=title)
-    response = requests.get(url)
+def fetch_xml_for_title(date, title, subtitle=None, chapter=None, subchapter=None, part=None):
+    url = f"https://www.ecfr.gov/api/versioner/v1/full/{date}/title-{title}.xml"
+
+    params = {}
+    if subtitle:
+        params["subtitle"] = subtitle
+    if chapter:
+        params["chapter"] = chapter
+    if subchapter:
+        params["subchapter"] = subchapter
+    if part:
+        params["part"] = part
+
+    response = requests.get(url, params=params)
+
     if response.status_code == 200:
         return response.text
     return None
