@@ -17,3 +17,5 @@ Per the [eCFR](https://www.ecfr.gov/):
 
 if st.button("Click me for balloons! 🎈"):
     st.balloons()
+if st.button("Click me for snow! ❄️"):
+    st.snow()
