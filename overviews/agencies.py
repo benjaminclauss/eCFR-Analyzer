@@ -1,20 +1,12 @@
 import streamlit as st
-import requests
 import pandas as pd
+from utils import ecfr
 
 st.set_page_config(layout="wide")
 
 st.title("Agencies")
 
-@st.cache_data
-def fetch_agencies():
-    response = requests.get("https://www.ecfr.gov/api/admin/v1/agencies.json")
-    if response.status_code == 200:
-        return response.json().get("agencies", [])
-    else:
-        return None
-
-agencies_data = fetch_agencies()
+agencies_data = ecfr.fetch_agencies()
 
 if agencies_data:
     agencies = pd.DataFrame(agencies_data).set_index("sortable_name")
