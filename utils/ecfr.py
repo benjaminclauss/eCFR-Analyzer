@@ -12,9 +12,14 @@ def fetch_agencies():
         return None
 
 
-def fetch_corrections():
+def fetch_corrections(date=None):
+    url = "https://www.ecfr.gov/api/admin/v1/corrections.json"
+
+    params = {}
+    if date is not None:
+        params["date"] = date
     try:
-        response = requests.get("https://www.ecfr.gov/api/admin/v1/corrections.json")
+        response = requests.get(url, params=params)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as error:

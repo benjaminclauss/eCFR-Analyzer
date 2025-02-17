@@ -8,6 +8,7 @@ pg = st.navigation(
         "Overview": [
             (st.Page("overviews/agencies.py", title="Agencies", icon=":material/account_balance:")),
             (st.Page("overviews/titles.py", title="Titles", icon=":material/book:")),
+            (st.Page("overviews/corrections.py", title="Corrections", icon=":material/edit:")),
         ],
     }
 )
