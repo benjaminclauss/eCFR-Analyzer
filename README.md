@@ -16,8 +16,7 @@
 
 - **Web Application**: [Streamlit](https://github.com/streamlit/streamlit)
   on [Streamlit Community Cloud](https://streamlit.io/cloud)
-    - **Analytics
-      **: [Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
+    - **Analytics**: [Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
 - **Metrics Backend**: [Redis](https://redis.io/) on [Upstash](https://upstash.com/)
 
 ## Getting Started
@@ -31,7 +30,7 @@ Ensure [Python](https://www.python.org/downloads/) in installed.
 ```shell
 python3 -m venv .venv
 source .venv/bin/activate
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Configuration
@@ -61,12 +60,13 @@ Generate metrics for all Agencies and persist to Redis:
 ## Metrics
 
 - **Word Count** - Total word count for Federal Agency associated CFR content.
+- **Correction Count Over Time**
 
 ### [Readability](https://pypi.org/project/py-readability-metrics/)
 
 - **Flesch-Kincaid Grade Level** - Estimates the US school grade required to understand the text. A higher score is
   easier to read.
-- **Flesch Reading Ease** – A score from 0 to 100; higher is easier to read. A higher score is easier ot read.
+- **Flesch Reading Ease** – A score from 0 to 100; higher is easier to read. A higher score is easier to read.
 - **SMOG Index** – Best for regulatory/legal documents, estimating the number of years of education needed. A higher
   score indicates worse readability. 
 

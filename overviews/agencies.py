@@ -32,7 +32,6 @@ def fetch_agencies():
 
 
 def fetch_aggregate_agency_metrics(slugs):
-    agency_metrics = [json.loads(s) if s is not None else None for s in r.mget(slugs)]
     extracted_data = {
         "Word Count": [],
         "Average Flesch-Kincaid": [],
@@ -40,7 +39,7 @@ def fetch_aggregate_agency_metrics(slugs):
         "Average SMOG": [],
     }
 
-    for agency in agency_metrics:
+    for agency in [json.loads(v) if v is not None else None for v in r.mget(slugs)]:
         if agency is not None:
             extracted_data["Word Count"].append(agency.get("total_word_count"))
             extracted_data["Average Flesch-Kincaid"].append(agency.get("average_flesch_kincaid"))
@@ -56,8 +55,8 @@ def fetch_aggregate_agency_metrics(slugs):
 
 
 def fetch_metrics_for_agency(slug):
-    agency_metrics = r.get(slug)
-    return json.loads(agency_metrics) if agency_metrics is not None else None
+    v = r.get(slug)
+    return json.loads(v) if v is not None else None
 
 
 with st.spinner("Fetching Agencies..."):
@@ -98,7 +97,7 @@ if agencies_data:
 
     calculating_count = agencies["Word Count"].isnull().sum()
     if calculating_count > 0:
-        st.progress(1 - (calculating_count / len(agencies)), text="Calculating Agency Word Counts...")
+        st.progress(1 - (calculating_count / len(agencies)), text="Calculating Agency metrics...")
 
     overview = agencies.drop(columns=["display_name", "slug", "cfr_references", "children"], errors="ignore")
     overview = overview.rename(columns={"name": "Name", "short_name": "Short Name"})
@@ -111,6 +110,7 @@ if agencies_data:
             options=overview["Name"],
             placeholder="Select Agencies to Exclude"
         )
+        # Reuse overview for Name
         filtered_overview = overview[~overview["Name"].isin(excluded_agencies)].reset_index()
 
         tab1, tab2 = st.tabs(["Bar Chart", "Pie Chart"])
@@ -141,16 +141,16 @@ if agencies_data:
 
     if selected_agency:
         st.subheader("CFR References")
-        reference_data = fetch_metrics_for_agency(selected_agency["slug"])["references"]
-        if reference_data:
-            references = pd.DataFrame(reference_data)
-            # Expand the dictionary
-            reference = references["reference"].apply(pd.Series)
-            references = pd.concat([reference, references.drop(columns=["reference"])], axis=1)
-
-            references.columns = [col.replace("_", " ").title() for col in references.columns]
-
-            st.dataframe(references, hide_index=True, use_container_width=True)
-
+        agency_references = selected_agency["cfr_references"]
+        if len(agency_references) > 0:
+            reference_metrics = fetch_metrics_for_agency(selected_agency["slug"])
+            if reference_metrics is not None:
+                references = pd.DataFrame(reference_metrics["references"])
+                reference = references["reference"].apply(pd.Series)
+                references = pd.concat([reference, references.drop(columns=["reference"])], axis=1)
+                references.columns = [col.replace("_", " ").title() for col in references.columns]
+                st.dataframe(references, hide_index=True, use_container_width=True)
+            else:
+                st.spinner("Calculating CFR Reference metrics...")
 else:
     st.error("Failed to fetch Agencies. Try again later.")

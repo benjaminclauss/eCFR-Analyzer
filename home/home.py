@@ -16,6 +16,7 @@ Per the [eCFR](https://www.ecfr.gov/):
 """)
 
 st.subheader("Need a Break? Have Some Fun! 🎉")
+
 col1, col2 = st.columns(2)
 with col1:
     if st.button("Have a party! 🎈"):
@@ -23,4 +24,3 @@ with col1:
 with col2:
     if st.button("Let it snow! ❄️"):
         st.snow()
-
