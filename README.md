@@ -16,7 +16,8 @@
 
 - **Web Application**: [Streamlit](https://github.com/streamlit/streamlit)
   on [Streamlit Community Cloud](https://streamlit.io/cloud)
-  - **Analytics**: [Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
+    - **Analytics
+      **: [Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
 - **Metrics Backend**: [Redis](https://redis.io/) on [Upstash](https://upstash.com/)
 
 ## Getting Started
@@ -36,6 +37,7 @@ pip install requirements.txt
 ### Configuration
 
 Define `secrets.toml` and/or the following environment variables.
+
 ```toml
 REDIS_URL = "hostname"
 REDIS_PORT = 6379
@@ -58,17 +60,21 @@ Generate metrics for all Agencies and persist to Redis:
 
 ## Metrics
 
-- **Word Count** - Total word count for Federal Agency associated CFR content. 
- 
+- **Word Count** - Total word count for Federal Agency associated CFR content.
+
 ### [Readability](https://pypi.org/project/py-readability-metrics/)
-- **Flesch-Kincaid Grade Level** - Estimates the US school grade required to understand the text.
-- **Flesch Reading Ease** – A score from 0 to 100; higher is easier to read.
-- **SMOG Index** – Best for regulatory/legal documents, estimating the number of years of education needed.
+
+- **Flesch-Kincaid Grade Level** - Estimates the US school grade required to understand the text. A higher score is
+  easier to read.
+- **Flesch Reading Ease** – A score from 0 to 100; higher is easier to read. A higher score is easier ot read.
+- **SMOG Index** – Best for regulatory/legal documents, estimating the number of years of education needed. A higher
+  score indicates worse readability. 
 
 ## Wishlist
 
 - [ ] Add proper [testing](https://docs.streamlit.io/develop/api-reference/app-testing).
 - [ ] Create properly scheduled, deployed batch job for data processing.
 - [ ] Add proper Python linting (e.g., quote consistency).
-- [ ] Allow different periodicity for Corrections graph.
+- [ ] Allow different periodicity for various graphs.
+- [ ] Add first-class date filtering (i.e., beyond DataFrame possible) in more places.
 - [ ] Add readability metrics for Titles.
