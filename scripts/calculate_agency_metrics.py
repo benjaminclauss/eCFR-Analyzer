@@ -29,7 +29,7 @@ r = redis.Redis(
 )
 
 
-def calculate_word_counts():
+def calculate_agency_metrics():
     agencies_data = ecfr.fetch_agencies()
     if not agencies_data:
         logging.error("No Agency data found.")
@@ -212,4 +212,4 @@ def extract_from_xml(root, ancestry_data):
 
 
 if __name__ == "__main__":
-    calculate_word_counts()
+    calculate_agency_metrics()
