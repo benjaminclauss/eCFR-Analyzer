@@ -57,9 +57,9 @@ def process_agency(agency):
         references = []
         for reference in agency["cfr_references"]:
             latest_issue_date = {t["number"]: t["latest_issue_date"] for t in titles_data}[reference["title"]]
-            reference_word_count = calculate_word_count_for_reference(latest_issue_date, reference)
-            total_word_count += reference_word_count
-            references.append({"reference": reference, "word_count": reference_word_count})
+            reference_data = process_reference(latest_issue_date, reference)
+            total_word_count += reference_data["word_count"]
+            references.append(reference_data)
         agency_word_count = total_word_count
         logging.info(
             f"✅ Completed: {agency['name']} - Word count: {agency_word_count}")
@@ -68,7 +68,7 @@ def process_agency(agency):
         return agency["slug"], agency_word_count
 
 
-def calculate_word_count_for_reference(date, reference):
+def process_reference(date, reference):
     title_number = reference["title"]
     subtitle = reference.get("subtitle", None)
     chapter = reference.get("chapter", None)
@@ -82,17 +82,17 @@ def calculate_word_count_for_reference(date, reference):
         reference_xml = title_xml
     else:
         ancestry_data = ecfr.fetch_ancestry_for_title(date, title_number, subtitle, chapter, subchapter, part, None)
-        extracted_reference = extract_from_xml(title_xml, ancestry_data['ancestors'])
+        extracted_reference = extract_from_xml(ET.fromstring(title_xml), ancestry_data['ancestors'])
         reference_xml = ET.tostring(extracted_reference, encoding="unicode", method="xml")
 
     soup = BeautifulSoup(reference_xml, "xml")
     p_texts = [p.get_text(strip=True) for p in soup.find_all("P")]
-    return sum(len(text.split()) for text in p_texts)
+
+    return {"word_count": sum(len(text.split()) for text in p_texts)}
 
 
-def extract_from_xml(xml_content, ancestry_data):
+def extract_from_xml(root, ancestry_data):
     """Parses CFR XML and extracts only the requested section using ancestry data."""
-    root = ET.fromstring(xml_content)
 
     # Extract identifiers from ancestry data
     hierarchy = {item["type"]: item["identifier"] for item in ancestry_data}
