@@ -19,9 +19,13 @@
   - **Analytics**: [Streamlit App Analytics](https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app/app-analytics)
 - **Metrics Backend**: [Redis](https://redis.io/) on [Upstash](https://upstash.com/)
 
-## Setup
+## Getting Started
+
+### Prerequisites
 
 Ensure [Python](https://www.python.org/downloads/) in installed.
+
+### Setup
 
 ```shell
 python3 -m venv .venv
@@ -29,11 +33,22 @@ source .venv/bin/activate
 pip install requirements.txt
 ```
 
-Run application:
+### Configuration
 
+Define `secrets.toml` and/or the following environment variables.
+```toml
+REDIS_URL = "hostname"
+REDIS_PORT = 6379
+REDIS_PASSWORD = "password"
 ```
+
+### Run Application
+
+```shell
 streamlit run app.py
 ```
+
+### Generate Metrics
 
 Generate metrics for all Agencies and persist to Redis:
 
@@ -52,6 +67,7 @@ Generate metrics for all Agencies and persist to Redis:
 
 ## Wishlist
 
-- [ ] Create properly scheduled batch job for data processing.
+- [ ] Create properly scheduled, deployed batch job for data processing.
 - [ ] Add proper Python linting (e.g., quote consistency).
 - [ ] Allow different periodicity for Corrections graph.
+- [ ] Add readability metrics for Titles.
