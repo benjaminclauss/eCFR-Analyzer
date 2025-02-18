@@ -75,6 +75,7 @@ Generate metrics for all Agencies and persist to Redis:
 - [ ] Add proper [testing](https://docs.streamlit.io/develop/api-reference/app-testing).
 - [ ] Create properly scheduled, deployed batch job for data processing.
 - [ ] Add proper Python linting (e.g., quote consistency).
+- [ ] Enable graphing multiple lines for grouped data (e.g., all Corrections for Agency).
 - [ ] Allow different periodicity for various graphs.
 - [ ] Add first-class date filtering (i.e., beyond DataFrame possible) in more places.
 - [ ] Add readability metrics for Titles.
