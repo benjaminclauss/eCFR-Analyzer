@@ -31,12 +31,14 @@ def fetch_agencies():
     return ecfr.fetch_agencies()
 
 
-def fetch_agency_metrics(agencies):
-    slugs = agencies["slug"].tolist()
+def fetch_aggregate_agency_metrics(slugs):
     agency_metrics = [json.loads(s) if s is not None else None for s in r.mget(slugs)]
-
-    extracted_data = {"Word Count": [], "Average Flesch-Kincaid": [], "Average Flesch Reading Ease": [],
-                      "Average SMOG": []}
+    extracted_data = {
+        "Word Count": [],
+        "Average Flesch-Kincaid": [],
+        "Average Flesch Reading Ease": [],
+        "Average SMOG": [],
+    }
 
     for agency in agency_metrics:
         if agency is not None:
@@ -53,14 +55,20 @@ def fetch_agency_metrics(agencies):
     return extracted_data
 
 
+def fetch_metrics_for_agency(slug):
+    agency_metrics = r.get(slug)
+    return json.loads(agency_metrics) if agency_metrics is not None else None
+
+
 with st.spinner("Fetching Agencies..."):
     agencies_data = fetch_agencies()
 
 if agencies_data:
     agencies = pd.DataFrame(agencies_data["agencies"]).set_index("sortable_name")
 
-    with st.spinner("Fetching word counts..."):
-        agency_metrics = fetch_agency_metrics(agencies)
+    with st.spinner("Fetching Agency metrics..."):
+        slugs = agencies["slug"].tolist()
+        agency_metrics = fetch_aggregate_agency_metrics(slugs)
         for key, values in agency_metrics.items():
             agencies[key] = values
 
@@ -120,5 +128,30 @@ if agencies_data:
                 tooltip=["Name", "Word Count"]
             ).properties(width=1000, height=1000)
             st.altair_chart(chart, use_container_width=False)
+
+    st.divider()
+    st.header("Agency Overview")
+    print(list(agencies))
+    selected_agency = st.selectbox(
+        "Agency",
+        agencies_data["agencies"],
+        index=None,
+        format_func=lambda a: a["name"],
+        placeholder="Select Agency",
+    )
+
+    if selected_agency:
+        st.subheader("CFR References")
+        reference_data = fetch_metrics_for_agency(selected_agency["slug"])["references"]
+        if reference_data:
+            references = pd.DataFrame(reference_data)
+            # Expand the dictionary
+            reference = references["reference"].apply(pd.Series)
+            references = pd.concat([reference, references.drop(columns=["reference"])], axis=1)
+
+            references.columns = [col.replace("_", " ").title() for col in references.columns]
+
+            st.dataframe(references, hide_index=True, use_container_width=True)
+
 else:
     st.error("Failed to fetch Agencies. Try again later.")

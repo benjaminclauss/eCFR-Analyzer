@@ -53,7 +53,7 @@ streamlit run app.py
 Generate metrics for all Agencies and persist to Redis:
 
 ```shell
- python -m scripts.calculate_word_counts
+ python -m scripts.calculate_agency_metrics
 ```
 
 ## Metrics

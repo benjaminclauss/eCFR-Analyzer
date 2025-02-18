@@ -152,6 +152,7 @@ def process_reference(date, reference):
             smog_score = None
 
     return {
+        "reference": reference,
         "word_count": word_count,
         "flesch_kincaid": flesch_kincaid_score,
         "flesch_reading_ease": flesch_reading_ease,
