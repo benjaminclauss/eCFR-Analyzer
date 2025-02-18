@@ -131,7 +131,6 @@ if agencies_data:
 
     st.divider()
     st.header("Agency Overview")
-    print(list(agencies))
     selected_agency = st.selectbox(
         "Agency",
         agencies_data["agencies"],

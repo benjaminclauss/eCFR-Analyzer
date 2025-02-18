@@ -35,11 +35,16 @@ def fetch_ancestry_for_title(date, title, subtitle=None, chapter=None, subchapte
     url = f"https://www.ecfr.gov/api/versioner/v1/ancestry/{date}/title-{title}.json"
     params = {}
 
-    if subtitle: params["subtitle"] = subtitle
-    if chapter: params["chapter"] = chapter
-    if subchapter: params["subchapter"] = subchapter
-    if part: params["part"] = part
-    if section: params["section"] = section
+    if subtitle is not None:
+        params["subtitle"] = subtitle
+    if chapter is not None:
+        params["chapter"] = chapter
+    if subchapter is not None:
+        params["subchapter"] = subchapter
+    if part is not None:
+        params["part"] = part
+    if section is not None:
+        params["section"] = section
 
     response = requests.get(url, params=params)
     if response.status_code == 200:
@@ -84,15 +89,23 @@ def fetch_titles():
         return None
 
 
-def fetch_versions_for_title(title, gte=None, lte=None, on=None):
+def fetch_versions_for_title(title, gte=None, lte=None, on=None, subtitle=None, chapter=None, subchapter=None, part=None):
     params = {}
     if on is not None:
         params["issue_date[on]"] = on
     else:
-        if gte is not None:
-            params["issue_date[gte]"] = gte
+        if gte is not None: params["issue_date[gte]"] = gte
         if lte is not None:
             params["issue_date[lte]"] = lte
+
+    if subtitle is not None:
+        params["subtitle"] = subtitle
+    if chapter is not None:
+        params["chapter"] = chapter
+    if subchapter is not None:
+        params["subchapter"] = subchapter
+    if part is not None:
+        params["part"] = part
 
     try:
         response = requests.get(f"https://www.ecfr.gov/api/versioner/v1/versions/title-{title}.json", params=params)
