@@ -43,8 +43,9 @@ Generate metrics for all Agencies and persist to Redis:
 
 ## Metrics
 
-### Readability
 - **Word Count** - Total word count for Federal Agency associated CFR content. 
+ 
+### [Readability](https://pypi.org/project/py-readability-metrics/)
 - **Flesch-Kincaid Grade Level** - Estimates the US school grade required to understand the text.
 - **Flesch Reading Ease** – A score from 0 to 100; higher is easier to read.
 - **SMOG Index** – Best for regulatory/legal documents, estimating the number of years of education needed.

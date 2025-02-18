@@ -9,6 +9,8 @@ from utils import ecfr
 st.set_page_config(layout="wide")
 
 st.title("Federal Agencies 🏛️")
+st.link_button("Readability Metrics", "https://pypi.org/project/py-readability-metrics/", type="secondary", icon="📚",
+               disabled=False, use_container_width=False)
 
 
 @st.cache_resource
@@ -29,10 +31,26 @@ def fetch_agencies():
     return ecfr.fetch_agencies()
 
 
-def fetch_word_counts(agencies):
+def fetch_agency_metrics(agencies):
     slugs = agencies["slug"].tolist()
     agency_metrics = [json.loads(s) if s is not None else None for s in r.mget(slugs)]
-    return [agency.get("total_word_count") if agency is not None else None for agency in agency_metrics]
+
+    extracted_data = {"Word Count": [], "Average Flesch-Kincaid": [], "Average Flesch Reading Ease": [],
+                      "Average SMOG": []}
+
+    for agency in agency_metrics:
+        if agency is not None:
+            extracted_data["Word Count"].append(agency.get("total_word_count"))
+            extracted_data["Average Flesch-Kincaid"].append(agency.get("average_flesch_kincaid"))
+            extracted_data["Average Flesch Reading Ease"].append(agency.get("average_flesch_reading_ease"))
+            extracted_data["Average SMOG"].append(agency.get("average_smog"))
+        else:
+            extracted_data["Word Count"].append(None)
+            extracted_data["Average Flesch-Kincaid"].append(None)
+            extracted_data["Average Flesch Reading Ease"].append(None)
+            extracted_data["Average SMOG"].append(None)
+
+    return extracted_data
 
 
 with st.spinner("Fetching Agencies..."):
@@ -42,13 +60,33 @@ if agencies_data:
     agencies = pd.DataFrame(agencies_data["agencies"]).set_index("sortable_name")
 
     with st.spinner("Fetching word counts..."):
-        agencies["Word Count"] = fetch_word_counts(agencies)
+        agency_metrics = fetch_agency_metrics(agencies)
+        for key, values in agency_metrics.items():
+            agencies[key] = values
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.metric("Total Agencies", len(agencies))
     with col2:
-        st.metric("Average Word Count", round(agencies["Word Count"].mean(), 2))
+        st.metric("Word Count", round(agencies["Word Count"].mean(), 2))
+    with col3:
+        st.metric(
+            "Average Flesch-Kincaid",
+            round(agencies["Average Flesch-Kincaid"].mean(), 2),
+            help="A higher Flesch-Kincaid score indicates that the text is easier to read."
+        )
+    with col4:
+        st.metric(
+            "Average Flesch Reading Ease",
+            round(agencies["Average Flesch Reading Ease"].mean(), 2),
+            help="A higher Flesch readability score indicates that a text is easier to read."
+        )
+    with col5:
+        st.metric(
+            "Average SMOG",
+            round(agencies["Average SMOG"].mean(), 2),
+            help="A higher SMOG score indicates worse readability.",
+        )
 
     calculating_count = agencies["Word Count"].isnull().sum()
     if calculating_count > 0:
@@ -78,8 +116,8 @@ if agencies_data:
         with tab2:
             chart = alt.Chart(filtered_overview).mark_arc().encode(
                 theta=alt.Theta("Word Count:Q", title="Word Count"),
-                color=alt.Color("Name:N", legend=None),  # Different colors for agencies
-                tooltip=["Name", "Word Count"]  # Show details on hover
+                color=alt.Color("Name:N", legend=None),
+                tooltip=["Name", "Word Count"]
             ).properties(width=1000, height=1000)
             st.altair_chart(chart, use_container_width=False)
 else:
