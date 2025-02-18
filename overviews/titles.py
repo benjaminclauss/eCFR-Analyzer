@@ -30,7 +30,7 @@ if titles_data:
     titles = titles.drop(columns=["Reserved"])
 
     for col in ["Last Amended", "Last Issued", "Up to Date As Of"]:
-        titles[col] = pd.to_datetime(titles[col], errors="coerce").dt.strftime("%Y-%m-%d")
+        titles[col] = pd.to_datetime(titles[col], errors="coerce").dt.date
 
     st.dataframe(titles.set_index("Number"), use_container_width=True)
 
@@ -65,10 +65,8 @@ if titles_data:
     content_versions = pd.DataFrame(versions_data["content_versions"]).drop(columns=["date", "title"])
 
     if not content_versions.empty:
-        content_versions["amendment_date"] = pd.to_datetime(content_versions["amendment_date"],
-                                                            errors="coerce").dt.strftime("%Y-%m-%d")
-        content_versions["issue_date"] = pd.to_datetime(content_versions["issue_date"], errors="coerce").dt.strftime(
-            "%Y-%m-%d")
+        for col in ["amendment_date", "issue_date"]:
+            content_versions[col] = pd.to_datetime(content_versions[col], errors="coerce").dt.date
 
         content_versions = content_versions.sort_values(by="identifier", key=natsort.natsort_keygen())
         content_versions = content_versions.rename(columns={"identifier": "Identifier"})

@@ -107,7 +107,7 @@ if corrections_data and len(corrections_data["ecfr_corrections"]) > 0:
     corrections = corrections.drop(columns=["CFR References"])
 
     for col in ["Error Corrected", "Error Occurred", "Last Modified"]:
-        corrections[col] = pd.to_datetime(corrections[col], errors="coerce").dt.strftime("%Y-%m-%d")
+        corrections[col] = pd.to_datetime(corrections[col], errors="coerce").dt.date
     corrections["Year"] = corrections["Year"].astype(str)
 
     st.metric("Total Corrections", len(corrections))
