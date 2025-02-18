@@ -67,6 +67,7 @@ Generate metrics for all Agencies and persist to Redis:
 
 ## Wishlist
 
+- [ ] Add proper [testing](https://docs.streamlit.io/develop/api-reference/app-testing).
 - [ ] Create properly scheduled, deployed batch job for data processing.
 - [ ] Add proper Python linting (e.g., quote consistency).
 - [ ] Allow different periodicity for Corrections graph.
