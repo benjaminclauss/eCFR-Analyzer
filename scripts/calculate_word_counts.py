@@ -1,14 +1,18 @@
 import json
 import logging
+import nltk
 import os
-
 import redis
 import threading
 import xml.etree.ElementTree as ET
 
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
+from readability import Readability
 from utils import ecfr
+
+# This is needed for readability.
+nltk.download('punkt_tab')
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,16 +58,51 @@ def process_agency(agency):
     with semaphore:  # Ensures only `MAX_CONCURRENT_CALCULATIONS` run at a time
         logging.info(f"🚀 Starting processing: {agency['name']}")
         total_word_count = 0
+        total_weighted_flesch_kincaid = 0
+        total_weighted_flesch_reading_ease = 0
+        total_weighted_smog = 0
         references = []
+
         for reference in agency["cfr_references"]:
             latest_issue_date = {t["number"]: t["latest_issue_date"] for t in titles_data}[reference["title"]]
             reference_data = process_reference(latest_issue_date, reference)
-            total_word_count += reference_data["word_count"]
+
+            word_count = reference_data["word_count"]
+            flesch_kincaid = reference_data.get("flesch_kincaid")
+            flesch_reading_ease = reference_data.get("flesch_reading_ease")
+            smog = reference_data.get("smog")
+
+            total_word_count += word_count
             references.append(reference_data)
+
+            if flesch_kincaid is not None:
+                total_weighted_flesch_kincaid += flesch_kincaid * word_count
+            if flesch_reading_ease is not None:
+                total_weighted_flesch_reading_ease += flesch_reading_ease * word_count
+            if smog is not None:
+                total_weighted_smog += smog * word_count
+
         agency_word_count = total_word_count
-        logging.info(
-            f"✅ Completed: {agency['name']} - Word count: {agency_word_count}")
-        result = {"total_word_count": agency_word_count, "references": references}
+        agency_flesch_kincaid = (
+            total_weighted_flesch_kincaid / total_word_count if total_word_count > 0 else None
+        )
+        agency_flesch_reading_ease = (
+            total_weighted_flesch_reading_ease / total_word_count if total_word_count > 0 else None
+        )
+        agency_smog = (
+            total_weighted_smog / total_word_count if total_word_count > 0 else None
+        )
+
+        logging.info(f"✅ Completed: {agency['name']}")
+
+        result = {
+            "total_word_count": agency_word_count,
+            "average_flesch_kincaid": agency_flesch_kincaid,
+            "average_flesch_reading_ease": agency_flesch_reading_ease,
+            "average_smog": agency_smog,
+            "references": references,
+        }
+
         r.set(agency["slug"], json.dumps(result))
         return agency["slug"], agency_word_count
 
@@ -75,6 +114,7 @@ def process_reference(date, reference):
     subchapter = reference.get("subchapter", None)
     part = reference.get("part", None)
 
+    # Fetch XML for the given title and parameters
     title_xml = ecfr.fetch_xml_for_title(date, title_number, subtitle=subtitle, chapter=chapter, subchapter=subchapter,
                                          part=part)
 
@@ -85,10 +125,38 @@ def process_reference(date, reference):
         extracted_reference = extract_from_xml(ET.fromstring(title_xml), ancestry_data['ancestors'])
         reference_xml = ET.tostring(extracted_reference, encoding="unicode", method="xml")
 
+    # Convert XML to BeautifulSoup object for text extraction
     soup = BeautifulSoup(reference_xml, "xml")
     p_texts = [p.get_text(strip=True) for p in soup.find_all("P")]
 
-    return {"word_count": sum(len(text.split()) for text in p_texts)}
+    # Extract raw text from XML
+    reference_content = ET.tostring(ET.fromstring(reference_xml), encoding="unicode", method="text")
+    word_count = sum(len(text.split()) for text in p_texts)
+
+    # Compute readability scores only if there is enough content
+    flesch_kincaid_score = None
+    flesch_reading_ease = None
+    smog_score = None
+
+    if len(reference_content.split()) > 100:
+        r = Readability(reference_content)
+        flesch_kincaid_score = r.flesch_kincaid().score
+        flesch_reading_ease = r.flesch().score
+
+        try:
+            smog_score = r.smog().score
+        except Exception as e:
+            # Handle SMOG exception for texts with fewer than 30 sentences
+            # TODO: Improve robustness.
+            logging.warning(f"Skipping SMOG score for reference {reference} due to insufficient sentences: {e}")
+            smog_score = None
+
+    return {
+        "word_count": word_count,
+        "flesch_kincaid": flesch_kincaid_score,
+        "flesch_reading_ease": flesch_reading_ease,
+        "smog": smog_score
+    }
 
 
 def extract_from_xml(root, ancestry_data):

@@ -26,19 +26,31 @@ Ensure [Python](https://www.python.org/downloads/) in installed.
 ```shell
 python3 -m venv .venv
 source .venv/bin/activate
+pip install requirements.txt
 ```
+
+Run application:
 
 ```
 streamlit run app.py
 ```
 
-Generate and save metrics for all agencies:
+Generate metrics for all Agencies and persist to Redis:
 
 ```shell
  python -m scripts.calculate_word_counts
 ```
 
+## Metrics
+
+### Readability
+- **Word Count** - Total word count for Federal Agency associated CFR content. 
+- **Flesch-Kincaid Grade Level** - Estimates the US school grade required to understand the text.
+- **Flesch Reading Ease** – A score from 0 to 100; higher is easier to read.
+- **SMOG Index** – Best for regulatory/legal documents, estimating the number of years of education needed.
+
 ## Wishlist
 
+- [ ] Create properly scheduled batch job for data processing.
 - [ ] Add proper Python linting (e.g., quote consistency).
 - [ ] Allow different periodicity for Corrections graph.
