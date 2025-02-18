@@ -1,3 +1,4 @@
+import altair as alt
 import json
 import pandas as pd
 import redis
@@ -57,5 +58,13 @@ if agencies_data:
     overview = overview.rename(columns={"name": "Name", "short_name": "Short Name"})
 
     st.dataframe(overview, hide_index=True, use_container_width=True)
+
+    with st.expander("Distribution of Word Counts", expanded=False):
+        chart = alt.Chart(overview.reset_index()).mark_bar().encode(
+            y=alt.Y("Name:N", sort="-x", axis=alt.Axis(labelLimit=500)),
+            x=alt.X("Word Count:Q", title="Word Count")
+        ).properties(width=1000, height=6000).configure_axis(labelFontSize=12, titleFontSize=14)
+
+        st.altair_chart(chart, use_container_width=False)  # Disable container width for better scaling
 else:
     st.error("Failed to fetch Agencies. Try again later.")
