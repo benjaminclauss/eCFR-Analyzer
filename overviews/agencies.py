@@ -60,11 +60,27 @@ if agencies_data:
     st.dataframe(overview, hide_index=True, use_container_width=True)
 
     with st.expander("Distribution of Word Counts", expanded=False):
-        chart = alt.Chart(overview.reset_index()).mark_bar().encode(
-            y=alt.Y("Name:N", sort="-x", axis=alt.Axis(labelLimit=500)),
-            x=alt.X("Word Count:Q", title="Word Count")
-        ).properties(width=1000, height=6000).configure_axis(labelFontSize=12, titleFontSize=14)
+        excluded_agencies = st.multiselect(
+            "Exclude Agencies",
+            options=overview["Name"],
+            placeholder="Select Agencies to Exclude"
+        )
+        filtered_overview = overview[~overview["Name"].isin(excluded_agencies)].reset_index()
 
-        st.altair_chart(chart, use_container_width=False)  # Disable container width for better scaling
+        tab1, tab2 = st.tabs(["Bar Chart", "Pie Chart"])
+        with tab1:
+            chart = alt.Chart(filtered_overview).mark_bar().encode(
+                y=alt.Y("Name:N", sort="-x", axis=alt.Axis(title=None, labelLimit=500)),
+                x=alt.X("Word Count:Q", title="Word Count")
+            ).properties(width=1000, height=6000).configure_axis(labelFontSize=12, titleFontSize=14)
+            st.altair_chart(chart, use_container_width=False)
+
+        with tab2:
+            chart = alt.Chart(filtered_overview).mark_arc().encode(
+                theta=alt.Theta("Word Count:Q", title="Word Count"),
+                color=alt.Color("Name:N", legend=None),  # Different colors for agencies
+                tooltip=["Name", "Word Count"]  # Show details on hover
+            ).properties(width=1000, height=1000)
+            st.altair_chart(chart, use_container_width=False)
 else:
     st.error("Failed to fetch Agencies. Try again later.")
